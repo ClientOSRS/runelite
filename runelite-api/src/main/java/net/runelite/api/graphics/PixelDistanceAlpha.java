@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2017, Adam <Adam@sigterm.info>
+ * Copyright (c) 2018, Woox <https://github.com/wooxsolo>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -22,39 +22,15 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.rs.api;
+package net.runelite.api.graphics;
 
-import net.runelite.api.DecorativeObject;
-import net.runelite.mapping.Import;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
-public interface RSDecorativeObject extends DecorativeObject
+@Data
+@RequiredArgsConstructor
+class PixelDistanceAlpha
 {
-	@Import("hash")
-	@Override
-	long getHash();
-
-	@Import("x")
-	int getX();
-
-	@Import("y")
-	int getY();
-
-	@Import("offsetX")
-	int getOffsetX();
-
-	@Import("offsetY")
-	int getOffsetY();
-
-	@Import("rotation")
-	int getOrientation();
-
-	@Import("renderable1")
-	@Override
-	RSRenderable getRenderable();
-
-	@Import("renderable2")
-	@Override
-	RSRenderable getRenderable2();
-
-	void setPlane(int plane);
+	private final int outerAlpha;
+	private final int distArrayPos;
 }

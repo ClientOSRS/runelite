@@ -65,12 +65,7 @@ public class RoguesDenOverlay extends Overlay
 		{
 			if (tile.getPlane() == client.getPlane() && obstacle.getLocalLocation().distanceTo(playerLocation) < MAX_DISTANCE)
 			{
-				Polygon p = tile.getGameObjects()[0].getConvexHull();
-				if (p != null)
-				{
-					graphics.setColor(Color.CYAN);
-					graphics.drawPolygon(p);
-				}
+				tile.getGameObjects()[0].drawOutline(1, Color.CYAN);
 			}
 		});
 

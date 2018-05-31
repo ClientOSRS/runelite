@@ -33,6 +33,7 @@ import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
+import java.util.Arrays;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -47,6 +48,7 @@ import net.runelite.api.GraphicsObject;
 import net.runelite.api.GroundObject;
 import net.runelite.api.Item;
 import net.runelite.api.ItemLayer;
+import net.runelite.api.Model;
 import net.runelite.api.NPC;
 import net.runelite.api.NPCComposition;
 import net.runelite.api.Node;
@@ -166,6 +168,7 @@ class DevToolsOverlay extends Overlay
 		String text = local.getName() + " (A: " + local.getAnimation() + ") (G: " + local.getGraphic() + ")";
 		OverlayUtil.renderActorOverlay(graphics, local, text, CYAN);
 		renderPlayerWireframe(graphics, local, CYAN);
+
 	}
 
 	private void renderNpcs(Graphics2D graphics)
@@ -294,15 +297,8 @@ class DevToolsOverlay extends Overlay
 				{
 					if (player.getLocalLocation().distanceTo(gameObject.getLocalLocation()) <= MAX_DISTANCE)
 					{
+						gameObject.drawOutline(1, Color.WHITE);
 						OverlayUtil.renderTileOverlay(graphics, gameObject, "ID: " + gameObject.getId(), GREEN);
-					}
-
-					// Draw a polygon around the convex hull
-					// of the model vertices
-					Polygon p = gameObject.getConvexHull();
-					if (p != null)
-					{
-						graphics.drawPolygon(p);
 					}
 				}
 			}
@@ -340,13 +336,8 @@ class DevToolsOverlay extends Overlay
 		{
 			if (player.getLocalLocation().distanceTo(decorObject.getLocalLocation()) <= MAX_DISTANCE)
 			{
+				decorObject.drawOutline(1, Color.WHITE);
 				OverlayUtil.renderTileOverlay(graphics, decorObject, "ID: " + decorObject.getId(), DEEP_PURPLE);
-			}
-
-			Polygon p = decorObject.getConvexHull();
-			if (p != null)
-			{
-				graphics.drawPolygon(p);
 			}
 		}
 	}
@@ -386,17 +377,6 @@ class DevToolsOverlay extends Overlay
 
 		for (Projectile projectile : projectiles)
 		{
-			int originX = projectile.getX1();
-			int originY = projectile.getY1();
-
-			LocalPoint tilePoint = new LocalPoint(originX, originY);
-			Polygon poly = Perspective.getCanvasTilePoly(client, tilePoint);
-
-			if (poly != null)
-			{
-				OverlayUtil.renderPolygon(graphics, poly, Color.RED);
-			}
-
 			int projectileId = projectile.getId();
 			Actor projectileInteracting = projectile.getInteracting();
 
@@ -415,7 +395,33 @@ class DevToolsOverlay extends Overlay
 
 			if (projectileInteracting != null)
 			{
+				int originX = projectile.getX1();
+				int originY = projectile.getY1();
+
+				LocalPoint tilePoint = new LocalPoint(originX, originY);
+				Polygon poly = Perspective.getCanvasTilePoly(client, tilePoint);
+
+				if (poly != null)
+				{
+					OverlayUtil.renderPolygon(graphics, poly, Color.RED);
+				}
+
 				OverlayUtil.renderActorOverlay(graphics, projectile.getInteracting(), infoString, Color.RED);
+			}
+			else
+			{
+				int x = (int)projectile.getX();
+				int y = (int)projectile.getY();
+				int z = (int)projectile.getZ();
+				int textWidth = graphics.getFontMetrics().stringWidth(infoString);
+				Point p = Perspective.localToCanvas(client, new LocalPoint(x, y), 0,
+					Perspective.getTileHeight(client, new LocalPoint(x, y), projectile.getFloor()) - z);
+				if (p != null)
+				{
+					p = new Point(p.getX() - textWidth / 2, p.getY() - 25);
+					OverlayUtil.renderTextLocation(graphics, p, infoString, RED);
+					projectile.drawOutline(1, Color.WHITE);
+				}
 			}
 		}
 	}

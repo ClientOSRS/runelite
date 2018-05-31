@@ -99,4 +99,8 @@ public interface RSProjectile extends RSRenderable, Projectile
 	@Import("velocityZ")
 	@Override
 	double getVelocityZ();
+
+	@Import("rotationX")
+	@Override
+	int getOrientation();
 }

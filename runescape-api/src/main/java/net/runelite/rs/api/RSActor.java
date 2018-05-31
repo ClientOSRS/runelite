@@ -71,6 +71,10 @@ public interface RSActor extends RSRenderable, Actor
 	@Override
 	int getOrientation();
 
+	@Import("angle")
+	@Override
+	int getCurrentOrientation();
+
 	@Import("logicalHeight")
 	@Override
 	int getLogicalHeight();

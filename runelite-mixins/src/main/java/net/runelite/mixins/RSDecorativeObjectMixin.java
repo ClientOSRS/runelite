@@ -24,6 +24,7 @@
  */
 package net.runelite.mixins;
 
+import java.awt.Color;
 import java.awt.Polygon;
 import java.awt.geom.Area;
 import net.runelite.api.Model;
@@ -60,7 +61,8 @@ public abstract class RSDecorativeObjectMixin implements RSDecorativeObject
 	}
 
 	@Inject
-	private RSModel getModel()
+	@Override
+	public RSModel getModel1()
 	{
 		RSRenderable renderable = getRenderable();
 		if (renderable == null)
@@ -84,16 +86,40 @@ public abstract class RSDecorativeObjectMixin implements RSDecorativeObject
 
 	@Inject
 	@Override
+	public RSModel getModel2()
+	{
+		RSRenderable renderable = getRenderable2();
+		if (renderable == null)
+		{
+			return null;
+		}
+
+		RSModel model;
+
+		if (renderable instanceof Model)
+		{
+			model = (RSModel) renderable;
+		}
+		else
+		{
+			model = renderable.getModel();
+		}
+
+		return model;
+	}
+
+	@Inject
+	@Override
 	public Area getClickbox()
 	{
-		return Perspective.getClickbox(client, getModel(), getOrientation(), getLocalLocation());
+		return Perspective.getClickbox(client, getModel1(), getOrientation(), getLocalLocation());
 	}
 
 	@Inject
 	@Override
 	public Polygon getConvexHull()
 	{
-		RSModel model = getModel();
+		RSModel model = getModel1();
 
 		if (model == null)
 		{
@@ -101,5 +127,34 @@ public abstract class RSDecorativeObjectMixin implements RSDecorativeObject
 		}
 
 		return model.getConvexHull(getX(), getY(), getOrientation());
+	}
+
+	@Inject
+	@Override
+	public void drawOutline(int outlineWidth, Color color)
+	{
+		this.drawOutline(outlineWidth, color, color);
+	}
+
+	@Inject
+	@Override
+	public void drawOutline(int outlineWidth, Color innerColor, Color outerColor)
+	{
+		Model model = this.getModel1();
+		if (model != null)
+		{
+			model.drawOutline(this.getX() + this.getOffsetX(), this.getY() + this.getOffsetY(),
+				Perspective.getTileHeight(client, this.getX(), this.getY(), this.getPlane()),
+				this.getOrientation(), outlineWidth, innerColor, outerColor);
+		}
+
+		model = this.getModel2();
+		if (model != null)
+		{
+			// Offset is not used for the second model
+			model.drawOutline(this.getX(), this.getY(),
+				Perspective.getTileHeight(client, this.getX(), this.getY(), this.getPlane()),
+				this.getOrientation(), outlineWidth, innerColor, outerColor);
+		}
 	}
 }

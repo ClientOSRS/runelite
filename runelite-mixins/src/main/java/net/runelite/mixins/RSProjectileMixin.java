@@ -24,7 +24,9 @@
  */
 package net.runelite.mixins;
 
+import java.awt.Color;
 import net.runelite.api.Actor;
+import net.runelite.api.Model;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.events.ProjectileMoved;
 import net.runelite.api.mixins.Inject;
@@ -101,5 +103,26 @@ public abstract class RSProjectileMixin implements RSProjectile
 		projectileMoved.setPosition(position);
 		projectileMoved.setZ(targetZ);
 		client.getCallbacks().post(projectileMoved);
+	}
+
+	@Inject
+	@Override
+	public void drawOutline(int outlineWidth, Color color)
+	{
+		this.drawOutline(outlineWidth, color, color);
+	}
+
+	@Inject
+	@Override
+	public void drawOutline(int outlineWidth, Color innerColor, Color outerColor)
+	{
+		Model model = this.getModel();
+		if (model == null)
+		{
+			return;
+		}
+
+		model.drawOutline((int)this.getX(), (int)this.getY(), (int)this.getZ(),
+			this.getOrientation(), outlineWidth, innerColor, outerColor);
 	}
 }

@@ -24,6 +24,7 @@
  */
 package net.runelite.api;
 
+import java.awt.Color;
 import java.awt.Polygon;
 import net.runelite.api.coords.Angle;
 
@@ -69,4 +70,11 @@ public interface GameObject extends TileObject
 	Angle getOrientation();
 
 	Renderable getRenderable();
+	int getRsOrientation();
+
+	Model getModel();
+
+	void drawOutline(int outlineWidth, Color color);
+
+	void drawOutline(int outlineWidth, Color innerColor, Color outerColor);
 }

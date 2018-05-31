@@ -24,6 +24,7 @@
  */
 package net.runelite.api;
 
+import java.awt.Color;
 import java.awt.Polygon;
 
 /**
@@ -41,4 +42,14 @@ public interface DecorativeObject extends TileObject
 
 	Renderable getRenderable();
 	Renderable getRenderable2();
+
+	Model getModel1();
+
+	Model getModel2();
+
+	int getOrientation();
+
+	void drawOutline(int outlineWidth, Color color);
+
+	void drawOutline(int outlineWidth, Color innerColor, Color outerColor);
 }

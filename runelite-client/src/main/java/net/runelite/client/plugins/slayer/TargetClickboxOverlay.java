@@ -26,11 +26,8 @@
  */
 package net.runelite.client.plugins.slayer;
 
-import java.awt.BasicStroke;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
-import java.awt.Polygon;
 import java.util.List;
 import javax.inject.Inject;
 import net.runelite.api.NPC;
@@ -63,22 +60,9 @@ public class TargetClickboxOverlay extends Overlay
 		List<NPC> targets = plugin.getHighlightedTargets();
 		for (NPC target : targets)
 		{
-			renderTargetOverlay(graphics, target, config.getTargetColor());
+			target.drawOutline(1, config.getTargetColor());
 		}
 
 		return null;
-	}
-
-	private void renderTargetOverlay(Graphics2D graphics, NPC actor, Color color)
-	{
-		Polygon objectClickbox = actor.getConvexHull();
-		if (objectClickbox != null)
-		{
-			graphics.setColor(color);
-			graphics.setStroke(new BasicStroke(2));
-			graphics.draw(objectClickbox);
-			graphics.setColor(new Color(color.getRed(), color.getGreen(), color.getBlue(), 20));
-			graphics.fill(objectClickbox);
-		}
 	}
 }

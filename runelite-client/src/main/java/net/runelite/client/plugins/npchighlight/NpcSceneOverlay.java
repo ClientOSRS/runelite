@@ -49,6 +49,8 @@ import net.runelite.client.ui.overlay.OverlayUtil;
 
 public class NpcSceneOverlay extends Overlay
 {
+	private static final Color TRANSPARENT = new Color(0, 0, 0, 0);
+
 	// Anything but white text is quite hard to see since it is drawn on
 	// a dark background
 	private static final Color TEXT_COLOR = Color.WHITE;
@@ -171,6 +173,22 @@ public class NpcSceneOverlay extends Overlay
 				Polygon objectClickbox = actor.getConvexHull();
 
 				renderPoly(graphics, color, objectClickbox);
+				break;
+
+			case THIN_OUTLINE:
+				actor.drawOutline(1, color);
+				break;
+
+			case OUTLINE:
+				actor.drawOutline(2, color);
+				break;
+
+			case THIN_GLOW:
+				actor.drawOutline(4, color, TRANSPARENT);
+				break;
+
+			case GLOW:
+				actor.drawOutline(8, color, TRANSPARENT);
 				break;
 		}
 
