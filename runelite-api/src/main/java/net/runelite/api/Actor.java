@@ -24,7 +24,6 @@
  */
 package net.runelite.api;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.image.BufferedImage;
@@ -240,20 +239,4 @@ public interface Actor extends Renderable
 	 * @return the overhead text
 	 */
 	String getOverhead();
-	/**
-	 * Draws an outline around the actor
-	 *
-	 * @param outlineWidth The pixel width of the outline
-	 * @param color The color of the outline
-	 */
-	void drawOutline(int outlineWidth, Color color);
-
-	/**
-	 * Draws an outline gradiant around the actor
-	 *
-	 * @param outlineWidth The pixel width of the outline
-	 * @param innerColor The color of the pixels closest to the actor
-	 * @param outerColor The color of the pixels furthest away from the actor
-	 */
-	void drawOutline(int outlineWidth, Color innerColor, Color outerColor);
 }

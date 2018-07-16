@@ -31,12 +31,16 @@ import java.awt.Polygon;
 import javax.inject.Inject;
 import net.runelite.api.Client;
 import net.runelite.api.coords.LocalPoint;
+import net.runelite.client.graphics.ModelOutlineRenderer;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 
 public class RoguesDenOverlay extends Overlay
 {
+	@Inject
+	private ModelOutlineRenderer modelOutliner;
+
 	private static final int MAX_DISTANCE = 2350;
 
 	private final Client client;
@@ -65,7 +69,7 @@ public class RoguesDenOverlay extends Overlay
 		{
 			if (tile.getPlane() == client.getPlane() && obstacle.getLocalLocation().distanceTo(playerLocation) < MAX_DISTANCE)
 			{
-				tile.getGameObjects()[0].drawOutline(1, Color.CYAN);
+				modelOutliner.drawOutline(tile.getGameObjects()[0], 1, Color.CYAN);
 			}
 		});
 

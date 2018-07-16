@@ -40,9 +40,11 @@ public interface RSDecorativeObject extends DecorativeObject
 	int getY();
 
 	@Import("offsetX")
+	@Override
 	int getOffsetX();
 
 	@Import("offsetY")
+	@Override
 	int getOffsetY();
 
 	@Import("rotation")

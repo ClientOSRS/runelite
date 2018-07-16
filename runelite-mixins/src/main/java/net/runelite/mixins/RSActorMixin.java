@@ -24,13 +24,11 @@
  */
 package net.runelite.mixins;
 
-import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.image.BufferedImage;
 import net.runelite.api.Actor;
 import net.runelite.api.Hitsplat;
-import net.runelite.api.Model;
 import net.runelite.api.NPC;
 import net.runelite.api.NPCComposition;
 import net.runelite.api.Perspective;
@@ -284,27 +282,5 @@ public abstract class RSActorMixin implements RSActor
 		event.setActor(this);
 		event.setHitsplat(hitsplat);
 		client.getCallbacks().post(event);
-	}
-
-	@Override
-	@Inject
-	public void drawOutline(int outlineWidth, Color color)
-	{
-		this.drawOutline(outlineWidth, color, color);
-	}
-
-	@Override
-	@Inject
-	public void drawOutline(int outlineWidth, Color innerColor, Color outerColor)
-	{
-		Model model = this.getModel();
-		if (model == null)
-		{
-			return;
-		}
-
-		model.drawOutline(this.getX(), this.getY(),
-			Perspective.getTileHeight(client, this.getX(), this.getY(), client.getPlane()),
-			this.getCurrentOrientation(), outlineWidth, innerColor, outerColor);
 	}
 }

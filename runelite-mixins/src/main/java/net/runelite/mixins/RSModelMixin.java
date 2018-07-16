@@ -24,16 +24,12 @@
  */
 package net.runelite.mixins;
 
-import java.awt.Color;
 import java.awt.Polygon;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
-import net.runelite.api.MainBufferProvider;
 import net.runelite.api.Model;
 import net.runelite.api.Perspective;
 import net.runelite.api.Point;
-import net.runelite.api.graphics.Rasterizer;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.mixins.Copy;
 import net.runelite.api.mixins.Inject;

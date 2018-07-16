@@ -24,7 +24,6 @@
  */
 package net.runelite.mixins;
 
-import java.awt.Color;
 import java.awt.geom.Area;
 import net.runelite.api.Model;
 import net.runelite.api.Perspective;
@@ -83,27 +82,5 @@ public abstract class RSGroundObjectMixin implements RSGroundObject
 	public Area getClickbox()
 	{
 		return Perspective.getClickbox(client, getModel(), 0, getLocalLocation());
-	}
-
-	@Inject
-	@Override
-	public void drawOutline(int outlineWidth, Color color)
-	{
-		this.drawOutline(outlineWidth, color, color);
-	}
-
-	@Inject
-	@Override
-	public void drawOutline(int outlineWidth, Color innerColor, Color outerColor)
-	{
-		Model model = this.getModel();
-		if (model == null)
-		{
-			return;
-		}
-
-		model.drawOutline(this.getX(), this.getY(),
-			Perspective.getTileHeight(client, this.getX(), this.getY(), client.getPlane()),
-			0, outlineWidth, innerColor, outerColor);
 	}
 }

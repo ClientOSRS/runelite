@@ -24,8 +24,6 @@
  */
 package net.runelite.api;
 
-import java.awt.Color;
-
 /**
  * Represents an object on the ground of a tile.
  */
@@ -34,8 +32,4 @@ public interface GroundObject extends TileObject
 	Renderable getRenderable();
 
 	Model getModel();
-
-	void drawOutline(int outlineWidth, Color color);
-
-	void drawOutline(int outlineWidth, Color innerColor, Color outerColor);
 }

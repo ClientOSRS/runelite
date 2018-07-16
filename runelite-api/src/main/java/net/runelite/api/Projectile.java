@@ -24,8 +24,6 @@
  */
 package net.runelite.api;
 
-import java.awt.Color;
-
 /**
  * Represents a projectile entity (ie. cannonball, arrow).
  */
@@ -170,8 +168,4 @@ public interface Projectile extends Renderable
 	double getVelocityZ();
 
 	int getOrientation();
-
-	void drawOutline(int outlineWidth, Color color);
-
-	void drawOutline(int outlineWidth, Color innerColor, Color outerColor);
 }

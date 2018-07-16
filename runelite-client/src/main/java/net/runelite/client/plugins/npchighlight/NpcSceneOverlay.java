@@ -42,6 +42,7 @@ import net.runelite.api.Perspective;
 import net.runelite.api.Point;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
+import net.runelite.client.graphics.ModelOutlineRenderer;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -49,6 +50,9 @@ import net.runelite.client.ui.overlay.OverlayUtil;
 
 public class NpcSceneOverlay extends Overlay
 {
+	@Inject
+	private ModelOutlineRenderer modelOutliner;
+
 	private static final Color TRANSPARENT = new Color(0, 0, 0, 0);
 
 	// Anything but white text is quite hard to see since it is drawn on
@@ -176,19 +180,19 @@ public class NpcSceneOverlay extends Overlay
 				break;
 
 			case THIN_OUTLINE:
-				actor.drawOutline(1, color);
+				modelOutliner.drawOutline(actor, 1, color);
 				break;
 
 			case OUTLINE:
-				actor.drawOutline(2, color);
+				modelOutliner.drawOutline(actor, 2, color);
 				break;
 
 			case THIN_GLOW:
-				actor.drawOutline(4, color, TRANSPARENT);
+				modelOutliner.drawOutline(actor, 4, color, TRANSPARENT);
 				break;
 
 			case GLOW:
-				actor.drawOutline(8, color, TRANSPARENT);
+				modelOutliner.drawOutline(actor, 8, color, TRANSPARENT);
 				break;
 		}
 

@@ -24,10 +24,8 @@
  */
 package net.runelite.mixins;
 
-import java.awt.Color;
 import java.awt.Polygon;
 import java.awt.geom.Area;
-import net.runelite.api.Model;
 import net.runelite.api.Perspective;
 import net.runelite.api.Point;
 import net.runelite.api.coords.Angle;
@@ -107,27 +105,5 @@ public abstract class RSGameObjectMixin implements RSGameObject
 		int orientation = getRsOrientation();
 		int rotation = (getFlags() >> 6) & 3;
 		return new Angle(rotation * 512 + orientation);
-	}
-
-	@Override
-	@Inject
-	public void drawOutline(int outlineWidth, Color color)
-	{
-		this.drawOutline(outlineWidth, color, color);
-	}
-
-	@Override
-	@Inject
-	public void drawOutline(int outlineWidth, Color innerColor, Color outerColor)
-	{
-		Model model = this.getModel();
-		if (model == null)
-		{
-			return;
-		}
-
-		model.drawOutline(this.getX(), this.getY(),
-			Perspective.getTileHeight(client, this.getX(), this.getY(), this.getPlane()),
-			this.getRsOrientation(), outlineWidth, innerColor, outerColor);
 	}
 }

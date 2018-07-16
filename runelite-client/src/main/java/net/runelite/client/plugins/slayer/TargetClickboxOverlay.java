@@ -30,19 +30,26 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.util.List;
 import javax.inject.Inject;
+import net.runelite.api.Client;
 import net.runelite.api.NPC;
+import net.runelite.client.graphics.ModelOutlineRenderer;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
 
 public class TargetClickboxOverlay extends Overlay
 {
+	@Inject
+	private ModelOutlineRenderer modelOutliner;
+
+	private final Client client;
 	private final SlayerConfig config;
 	private final SlayerPlugin plugin;
 
 	@Inject
-	TargetClickboxOverlay(SlayerConfig config, SlayerPlugin plugin)
+	TargetClickboxOverlay(Client client, SlayerConfig config, SlayerPlugin plugin)
 	{
+		this.client = client;
 		this.config = config;
 		this.plugin = plugin;
 		setPosition(OverlayPosition.DYNAMIC);
@@ -60,7 +67,7 @@ public class TargetClickboxOverlay extends Overlay
 		List<NPC> targets = plugin.getHighlightedTargets();
 		for (NPC target : targets)
 		{
-			target.drawOutline(1, config.getTargetColor());
+			modelOutliner.drawOutline(target, 1, config.getTargetColor());
 		}
 
 		return null;

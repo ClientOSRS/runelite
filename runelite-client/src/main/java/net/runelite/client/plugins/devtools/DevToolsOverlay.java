@@ -33,7 +33,6 @@ import java.awt.Graphics2D;
 import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
-import java.util.Arrays;
 import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -48,7 +47,6 @@ import net.runelite.api.GraphicsObject;
 import net.runelite.api.GroundObject;
 import net.runelite.api.Item;
 import net.runelite.api.ItemLayer;
-import net.runelite.api.Model;
 import net.runelite.api.NPC;
 import net.runelite.api.NPCComposition;
 import net.runelite.api.Node;
@@ -63,6 +61,7 @@ import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.widgets.Widget;
 import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.api.widgets.WidgetItem;
+import net.runelite.client.graphics.ModelOutlineRenderer;
 import net.runelite.client.ui.FontManager;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
@@ -76,6 +75,8 @@ class DevToolsOverlay extends Overlay
 {
 	private static final int ITEM_EMPTY = 6512;
 	private static final int ITEM_FILLED = 20594;
+
+	private ModelOutlineRenderer modelOutliner;
 
 	private static final Font FONT = FontManager.getRunescapeFont().deriveFont(Font.BOLD, 16);
 	private static final Color RED = new Color(221, 44, 0);
@@ -297,7 +298,7 @@ class DevToolsOverlay extends Overlay
 				{
 					if (player.getLocalLocation().distanceTo(gameObject.getLocalLocation()) <= MAX_DISTANCE)
 					{
-						gameObject.drawOutline(1, Color.WHITE);
+						modelOutliner.drawOutline(gameObject, 1, Color.WHITE);
 						OverlayUtil.renderTileOverlay(graphics, gameObject, "ID: " + gameObject.getId(), GREEN);
 					}
 				}
@@ -336,7 +337,7 @@ class DevToolsOverlay extends Overlay
 		{
 			if (player.getLocalLocation().distanceTo(decorObject.getLocalLocation()) <= MAX_DISTANCE)
 			{
-				decorObject.drawOutline(1, Color.WHITE);
+				modelOutliner.drawOutline(decorObject, 1, Color.WHITE);
 				OverlayUtil.renderTileOverlay(graphics, decorObject, "ID: " + decorObject.getId(), DEEP_PURPLE);
 			}
 		}
@@ -420,7 +421,7 @@ class DevToolsOverlay extends Overlay
 				{
 					p = new Point(p.getX() - textWidth / 2, p.getY() - 25);
 					OverlayUtil.renderTextLocation(graphics, p, infoString, RED);
-					projectile.drawOutline(1, Color.WHITE);
+					modelOutliner.drawOutline(projectile, 1, Color.WHITE);
 				}
 			}
 		}

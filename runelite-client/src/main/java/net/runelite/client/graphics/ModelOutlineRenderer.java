@@ -22,20 +22,34 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package net.runelite.api.graphics;
+package net.runelite.client.graphics;
 
+import com.google.inject.Inject;
+import com.google.inject.Singleton;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import net.runelite.api.Client;
+import net.runelite.api.DecorativeObject;
+import net.runelite.api.GameObject;
+import net.runelite.api.GroundObject;
+import net.runelite.api.MainBufferProvider;
+import net.runelite.api.Model;
+import net.runelite.api.NPC;
+import net.runelite.api.NPCComposition;
 import net.runelite.api.Perspective;
+import net.runelite.api.Player;
+import net.runelite.api.Projectile;
+import net.runelite.api.coords.LocalPoint;
+import net.runelite.client.task.Schedule;
+import net.runelite.client.task.Scheduler;
 
-public class Rasterizer
+@Singleton
+public class ModelOutlineRenderer
 {
 	/*
 	 * This class doesn't really "need" static variables, but they are
@@ -45,50 +59,54 @@ public class Rasterizer
 	 * to become bigger.
 	 */
 
-	private static boolean isReset;
-	private static boolean usedSinceLastCheck;
+	@Inject
+	private Client client;
+
+	@Inject
+	private Scheduler scheduler;
+
+	private boolean isReset;
+	private boolean usedSinceLastCheck;
 
 	// Dimensions of the underlying image
-	private static int imageWidth;
-	private static int imageHeight;
+	private int imageWidth;
+	private int imageHeight;
 
 	// Boundaries for the current rasterization
-	private static int clipX1;
-	private static int clipY1;
-	private static int clipX2;
-	private static int clipY2;
+	private int clipX1;
+	private int clipY1;
+	private int clipX2;
+	private int clipY2;
 
 	// Pixel points that would be rendered to
-	private static int[] visited;
-	private static int currentVisitedNumber = 0;
+	private int[] visited;
+	private int currentVisitedNumber = 0;
 
 	// Transformed vertex positions
-	private static int[] projectedVerticesX;
-	private static int[] projectedVerticesY;
-	private static boolean[] projectedVerticesRenderable;
+	private int[] projectedVerticesX;
+	private int[] projectedVerticesY;
+	private boolean[] projectedVerticesRenderable;
 
 	// An array of pixel points to raster onto the image. These are checked against
 	// clip boundaries and the visited array to prevent drawing on top of the model
 	// and outside the scene area. They are grouped per distance to the closest pixel
 	// drawn on the model.
-	private static int[][] outlinePixels;
-	private static int[] outlinePixelsLengths; // outlinePixelsLength[i] is the used length of outlinePixels[i]
-	private static int outlineArrayWidth;
+	private int[][] outlinePixels;
+	private int[] outlinePixelsLengths; // outlinePixelsLength[i] is the used length of outlinePixels[i]
+	private int outlineArrayWidth;
 
 	// A list of pixel distances ordered from shortest to longest distance for
 	// each outline width. These are calculated once upon first usage and then
 	// stored here to prevent reevaluation.
-	private static List<List<PixelDistanceAlpha>> precomputedDistancePriorities;
+	private List<List<PixelDistanceAlpha>> precomputedDistancePriorities;
 
-	static
+	public ModelOutlineRenderer()
 	{
 		reset();
-
-		ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-		scheduler.scheduleAtFixedRate(Rasterizer::checkUsage, 5, 5, TimeUnit.SECONDS);
 	}
 
-	private synchronized static void checkUsage()
+	@Schedule(period = 5, unit = ChronoUnit.SECONDS)
+	public void checkUsage()
 	{
 		if (!isReset && !usedSinceLastCheck)
 		{
@@ -101,7 +119,7 @@ public class Rasterizer
 	/**
 	 * Reset memory used by the rasterizer
 	 */
-	private static void reset()
+	private void reset()
 	{
 		visited = new int[0];
 		projectedVerticesX = new int[0];
@@ -111,6 +129,11 @@ public class Rasterizer
 		outlinePixelsLengths = new int[0];
 		precomputedDistancePriorities = new ArrayList<>(0);
 		isReset = true;
+
+		if (scheduler != null)
+		{
+			scheduler.unregisterObject(this);
+		}
 	}
 
 	/**
@@ -119,7 +142,7 @@ public class Rasterizer
 	 * @param value The value to find the next power of two of
 	 * @return Returns the next power of two
 	 */
-	private static int nextPowerOfTwo(int value)
+	private int nextPowerOfTwo(int value)
 	{
 		value--;
 		value |= value >> 1;
@@ -137,7 +160,7 @@ public class Rasterizer
 	 * @param outlineWidth The outline width
 	 * @return Returns the list of pixel distances
 	 */
-	private static List<PixelDistanceAlpha> getPriorityList(int outlineWidth)
+	private List<PixelDistanceAlpha> getPriorityList(int outlineWidth)
 	{
 		while (precomputedDistancePriorities.size() <= outlineWidth)
 		{
@@ -182,7 +205,7 @@ public class Rasterizer
 	 *
 	 * @return Returns true if the triangle goes counter clockwise and should be culled, otherwise false
 	 */
-	private static boolean cullFace(int x1, int y1, int x2, int y2, int x3, int y3)
+	private boolean cullFace(int x1, int y1, int x2, int y2, int x3, int y3)
 	{
 		return
 			(y2 - y1) * (x3 - x2) -
@@ -197,7 +220,7 @@ public class Rasterizer
 	 * @param distArrayPos The position in the array
 	 * @param additionalMinimumSize The additional minimum size required
 	 */
-	private static void ensureMinimumOutlineQueueSize(int distArrayPos, int additionalMinimumSize)
+	private void ensureMinimumOutlineQueueSize(int distArrayPos, int additionalMinimumSize)
 	{
 		int minimumSize = outlinePixelsLengths[distArrayPos] + additionalMinimumSize;
 		while (outlinePixels[distArrayPos].length < minimumSize)
@@ -214,7 +237,7 @@ public class Rasterizer
 	 *
 	 * @param pixelAmount The amount of pixels to reset
 	 */
-	private static void resetVisited(int pixelAmount)
+	private void resetVisited(int pixelAmount)
 	{
 		// The visited array is essentially a boolean array, but by
 		// making it an int array and checking if visited[i] == currentVisitedNumber
@@ -235,7 +258,7 @@ public class Rasterizer
 	 *
 	 * @param outlineWidth The width of the outline to reset pixels for
 	 */
-	private static void resetOutline(int outlineWidth)
+	private void resetOutline(int outlineWidth)
 	{
 		outlineArrayWidth = outlineWidth + 2;
 
@@ -266,7 +289,7 @@ public class Rasterizer
 	 * @param x1 The starting x position
 	 * @param x2 The ending x position
 	 */
-	private static void simulateHorizontalLineRasterizationForOutline(
+	private void simulateHorizontalLineRasterizationForOutline(
 		int pixelPos, int x1, int x2)
 	{
 		if (x2 > clipX2)
@@ -325,7 +348,8 @@ public class Rasterizer
 	 * @param x3 The starting x position of the second line
 	 * @param x4 The ending x position of the second line
 	 */
-	private static void outlineAroundHorizontalLine(int pixelPos, int x1, int x2, int x3, int x4)
+	private void outlineAroundHorizontalLine(
+		int pixelPos, int x1, int x2, int x3, int x4)
 	{
 		if (x1 < clipX1)
 		{
@@ -407,7 +431,7 @@ public class Rasterizer
 	 * @param x3 The x position of the third vertex in the triangle
 	 * @param y3 The y position of the third vertex in the triangle
 	 */
-	private static void simulateTriangleRasterizationForOutline(
+	private void simulateTriangleRasterizationForOutline(
 		int x1, int y1, int x2, int y2, int x3, int y3)
 	{
 		// Swap vertices so y1 <= y2 <= y3 using bubble sort
@@ -596,35 +620,31 @@ public class Rasterizer
 	/**
 	 * Translates the vertices 3D points to the screen canvas 2D points
 	 *
-	 * @param vertexCount The amount of vertices
-	 * @param verticesX The x positions of the vertices
-	 * @param verticesY The y positions of the vertices
-	 * @param verticesZ The z positions of the vertices
 	 * @param localX The local x position of the vertices
 	 * @param localY The local y position of the vertices
 	 * @param localZ The local z position of the vertices
 	 * @param vertexOrientation The orientation of the vertices
-	 * @param cameraX The x position of the camera
-	 * @param cameraY The y position of the camera
-	 * @param cameraZ The z position of the camera
-	 * @param cameraYaw The yaw of the camera
-	 * @param cameraPitch The pitch of the camera
-	 * @param scale The scale of the camera
 	 * @return Returns true if any of them are inside the clip area, otherwise false
 	 */
-	private static boolean projectVertices(final int vertexCount,
-		final int[] verticesX, final int[] verticesY, final int[] verticesZ,
-		final int localX, final int localY, final int localZ,
-		final int vertexOrientation,
-		final int cameraX, final int cameraY, final int cameraZ,
-		final int cameraYaw, final int cameraPitch, final int scale)
+	private boolean projectVertices(Model model,
+		final int localX, final int localY, final int localZ, final int vertexOrientation)
 	{
+		final int cameraX = client.getCameraX();
+		final int cameraY = client.getCameraY();
+		final int cameraZ = client.getCameraZ();
+		final int cameraYaw = client.getCameraYaw();
+		final int cameraPitch = client.getCameraPitch();
+		final int scale = client.getScale();
 		final int orientationSin = Perspective.SINE[vertexOrientation];
 		final int orientationCos = Perspective.COSINE[vertexOrientation];
 		final int pitchSin = Perspective.SINE[cameraPitch];
 		final int pitchCos = Perspective.COSINE[cameraPitch];
 		final int yawSin = Perspective.SINE[cameraYaw];
 		final int yawCos = Perspective.COSINE[cameraYaw];
+		final int vertexCount = model.getVerticesCount();
+		final int[] verticesX = model.getVerticesX();
+		final int[] verticesY = model.getVerticesY();
+		final int[] verticesZ = model.getVerticesZ();
 
 		boolean anyVisible = false;
 
@@ -690,9 +710,14 @@ public class Rasterizer
 	 * Simulate rendering of the model and puts every pixel of the wireframe of
 	 * the non-culled and non-transparent faces into the outline pixel queue.
 	 */
-	private static void simulateModelRasterizationForOutline(int triangleCount,
-		int[] indices1, int[] indices2, int[] indices3, byte[] triangleTransparencies)
+	private void simulateModelRasterizationForOutline(Model model)
 	{
+		final int triangleCount = model.getTrianglesCount();
+		final int[] indices1 = model.getTrianglesX();
+		final int[] indices2 = model.getTrianglesY();
+		final int[] indices3 = model.getTrianglesZ();
+		final byte[] triangleTransparencies = model.getTriangleTransparencies();
+
 		for (int i = 0; i < triangleCount; i++)
 		{
 			if (projectedVerticesRenderable[indices1[i]] &&
@@ -713,7 +738,7 @@ public class Rasterizer
 
 				if (!cullFace(v1x, v1y, v2x, v2y, v3x, v3y))
 				{
-					Rasterizer.simulateTriangleRasterizationForOutline(
+					simulateTriangleRasterizationForOutline(
 						v1x, v1y, v2x, v2y, v3x, v3y);
 				}
 			}
@@ -728,7 +753,7 @@ public class Rasterizer
 	 * @param innerColor The color of the pixels of the outline closest to the model
 	 * @param outerColor The color of the pixels of the outline furthest away from the model
 	 */
-	private static void rasterOutline(BufferedImage image, int outlineWidth,
+	private void renderOutline(BufferedImage image, int outlineWidth,
 		Color innerColor, Color outerColor)
 	{
 		int[] imageData = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
@@ -864,26 +889,6 @@ public class Rasterizer
 	/**
 	 * Draws an outline around a model to an image
 	 *
-	 * @param image The image to draw to
-	 * @param clipX1 The left clipping point of the outline
-	 * @param clipY1 The top clipping point of the outline
-	 * @param clipX2 The right clipping point of the outline
-	 * @param clipY2 The bottom clipping point of the outline
-	 * @param vertexCount The amount of vertices in the model
-	 * @param verticesX The x positions of the vertices in the model
-	 * @param verticesY The y position of the vertices in the model
-	 * @param verticesZ The z position of the vertices in the model
-	 * @param triangleCount The amount of faces in the model
-	 * @param indices1 The indices of the first vertex in the faces
-	 * @param indices2 The indices of the second vertex in the faces
-	 * @param indices3 The indices of the third vertex in the faces
-	 * @param triangleTransparencies The transparencies of the faces
-	 * @param cameraX The x position of the camera
-	 * @param cameraY The y position of the camera
-	 * @param cameraZ The z position of the camera
-	 * @param cameraPitch The pitch of the camera
-	 * @param cameraYaw The yaw of the camera
-	 * @param cameraScale The scale of the camera
 	 * @param localX The local x position of the model
 	 * @param localY The local y position of the model
 	 * @param localZ The local z position of the model
@@ -892,47 +897,48 @@ public class Rasterizer
 	 * @param innerColor The color of the pixels of the outline closest to the model
 	 * @param outerColor The color of the pixels of the outline furthest away from the model
 	 */
-	public synchronized static void drawOutline(BufferedImage image, int clipX1, int clipY1, int clipX2, int clipY2,
-		int vertexCount, int[] verticesX, int[] verticesY, int[] verticesZ,
-		int triangleCount, int[] indices1, int[] indices2, int[] indices3, byte[] triangleTransparencies,
-		int cameraX, int cameraY, int cameraZ, int cameraPitch, int cameraYaw, int cameraScale,
-		int localX, int localY, int localZ,
-		int orientation, int outlineWidth, Color innerColor, Color outerColor)
+	private void drawModelOutline(Model model,
+		int localX, int localY, int localZ, int orientation,
+		int outlineWidth, Color innerColor, Color outerColor)
 	{
 		if (outlineWidth <= 0)
 		{
 			return;
 		}
 
+		if (isReset)
+		{
+			scheduler.registerObject(this);
+		}
+
 		isReset = false;
 		usedSinceLastCheck = true;
 
-		Rasterizer.clipX1 = clipX1;
-		Rasterizer.clipY1 = clipY1;
-		Rasterizer.clipX2 = clipX2;
-		Rasterizer.clipY2 = clipY2;
-		Rasterizer.imageWidth = image.getWidth();
-		Rasterizer.imageHeight = image.getHeight();
+		MainBufferProvider bufferProvider = (MainBufferProvider) client.getBufferProvider();
+		BufferedImage image = (BufferedImage) bufferProvider.getImage();
+
+		clipX1 = client.getViewportXOffset();
+		clipY1 = client.getViewportYOffset();
+		clipX2 = client.getViewportWidth() + clipX1;
+		clipY2 = client.getViewportHeight() + clipY1;
+		imageWidth = image.getWidth();
+		imageHeight = image.getHeight();
 		final int pixelAmount = imageWidth * imageHeight;
 
 		resetVisited(pixelAmount);
 		resetOutline(outlineWidth);
 
-		if (!projectVertices(vertexCount,
-			verticesX, verticesY, verticesZ,
-			localX, localY, localZ,
-			orientation, cameraX, cameraY, cameraZ,
-			cameraYaw, cameraPitch, cameraScale))
+		if (!projectVertices(model,
+			localX, localY, localZ, orientation))
 		{
 			// No vertex of the model is visible on the screen, so we can
 			// assume there are no parts of the model to outline.
 			return;
 		}
 
-		simulateModelRasterizationForOutline(triangleCount,
-			indices1, indices2, indices3, triangleTransparencies);
+		simulateModelRasterizationForOutline(model);
 
-		rasterOutline(image, outlineWidth, innerColor, outerColor);
+		renderOutline(image, outlineWidth, innerColor, outerColor);
 	}
 
 	public void drawOutline(NPC npc, int outlineWidth, Color color)

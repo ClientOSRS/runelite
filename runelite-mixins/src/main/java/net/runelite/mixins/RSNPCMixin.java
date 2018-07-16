@@ -25,10 +25,7 @@
 package net.runelite.mixins;
 
 import net.runelite.api.AnimationID;
-import java.awt.Color;
-import net.runelite.api.Model;
 import net.runelite.api.NPCComposition;
-import net.runelite.api.Perspective;
 import net.runelite.api.events.NpcDespawned;
 import net.runelite.api.mixins.Copy;
 import net.runelite.api.mixins.FieldHook;
@@ -169,38 +166,5 @@ public abstract class RSNPCMixin implements RSNPC
 	public void setDead(boolean dead)
 	{
 		this.dead = dead;
-	}
-
-	@Override
-	@Inject
-	public void drawOutline(int outlineWidth, Color innerColor, Color outerColor)
-	{
-		Model model = this.getModel();
-		if (model == null)
-		{
-			return;
-		}
-
-		int size = 1;
-		NPCComposition composition = this.getTransformedComposition();
-		if (composition != null)
-		{
-			size = composition.getSize();
-		}
-
-		// NPCs z position are calculated based on the tile height of the northeastern tile
-		final int northEastX = this.getX() + Perspective.LOCAL_TILE_SIZE * (size - 1) / 2;
-		final int northEastY = this.getY() + Perspective.LOCAL_TILE_SIZE * (size - 1) / 2;
-
-		model.drawOutline(this.getX(), this.getY(),
-			Perspective.getTileHeight(client, northEastX, northEastY, client.getPlane()),
-			this.getCurrentOrientation(), outlineWidth, innerColor, outerColor);
-	}
-
-	@Override
-	@Inject
-	public void drawOutline(int outlineWidth, Color color)
-	{
-		this.drawOutline(outlineWidth, color, color);
 	}
 }
