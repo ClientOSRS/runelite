@@ -58,7 +58,7 @@ public class ModelOutlineRenderer
 	 * to become bigger.
 	 */
 
-	private Client client;
+	private final Client client;
 
 	private boolean isReset;
 	private boolean usedSinceLastCheck;
