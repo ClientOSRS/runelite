@@ -39,19 +39,19 @@ import net.runelite.client.ui.overlay.OverlayPosition;
 
 public class TargetClickboxOverlay extends Overlay
 {
-	@Inject
-	private ModelOutlineRenderer modelOutliner;
-
 	private final Client client;
 	private final SlayerConfig config;
 	private final SlayerPlugin plugin;
+	private final ModelOutlineRenderer modelOutliner;
 
 	@Inject
-	TargetClickboxOverlay(Client client, SlayerConfig config, SlayerPlugin plugin)
+	TargetClickboxOverlay(Client client, SlayerConfig config, SlayerPlugin plugin,
+		ModelOutlineRenderer modelOutlineRenderer)
 	{
 		this.client = client;
 		this.config = config;
 		this.plugin = plugin;
+		this.modelOutliner = modelOutlineRenderer;
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 	}

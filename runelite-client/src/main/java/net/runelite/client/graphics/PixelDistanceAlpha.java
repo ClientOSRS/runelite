@@ -24,10 +24,10 @@
  */
 package net.runelite.client.graphics;
 
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 
-@Data
+@Value
 @RequiredArgsConstructor
 class PixelDistanceAlpha
 {

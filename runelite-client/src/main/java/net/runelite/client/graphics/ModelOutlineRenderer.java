@@ -46,7 +46,6 @@ import net.runelite.api.Player;
 import net.runelite.api.Projectile;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.client.task.Schedule;
-import net.runelite.client.task.Scheduler;
 
 @Singleton
 public class ModelOutlineRenderer
@@ -59,11 +58,7 @@ public class ModelOutlineRenderer
 	 * to become bigger.
 	 */
 
-	@Inject
 	private Client client;
-
-	@Inject
-	private Scheduler scheduler;
 
 	private boolean isReset;
 	private boolean usedSinceLastCheck;
@@ -100,8 +95,11 @@ public class ModelOutlineRenderer
 	// stored here to prevent reevaluation.
 	private List<List<PixelDistanceAlpha>> precomputedDistancePriorities;
 
-	public ModelOutlineRenderer()
+	@Inject
+	private ModelOutlineRenderer(Client client)
 	{
+		this.client = client;
+
 		reset();
 	}
 
@@ -129,11 +127,6 @@ public class ModelOutlineRenderer
 		outlinePixelsLengths = new int[0];
 		precomputedDistancePriorities = new ArrayList<>(0);
 		isReset = true;
-
-		if (scheduler != null)
-		{
-			scheduler.unregisterObject(this);
-		}
 	}
 
 	/**
@@ -142,7 +135,7 @@ public class ModelOutlineRenderer
 	 * @param value The value to find the next power of two of
 	 * @return Returns the next power of two
 	 */
-	private int nextPowerOfTwo(int value)
+	private static int nextPowerOfTwo(int value)
 	{
 		value--;
 		value |= value >> 1;
@@ -152,6 +145,18 @@ public class ModelOutlineRenderer
 		value |= value >> 16;
 		value++;
 		return value;
+	}
+
+	/**
+	 * Determine if a triangle goes counter clockwise
+	 *
+	 * @return Returns true if the triangle goes counter clockwise and should be culled, otherwise false
+	 */
+	private static boolean cullFace(int x1, int y1, int x2, int y2, int x3, int y3)
+	{
+		return
+			(y2 - y1) * (x3 - x2) -
+			(x2 - x1) * (y3 - y2) < 0;
 	}
 
 	/**
@@ -198,18 +203,6 @@ public class ModelOutlineRenderer
 		precomputedDistancePriorities.set(outlineWidth, ps);
 
 		return ps;
-	}
-
-	/**
-	 * Determine if a triangle goes counter clockwise
-	 *
-	 * @return Returns true if the triangle goes counter clockwise and should be culled, otherwise false
-	 */
-	private boolean cullFace(int x1, int y1, int x2, int y2, int x3, int y3)
-	{
-		return
-			(y2 - y1) * (x3 - x2) -
-			(x2 - x1) * (y3 - y2) < 0;
 	}
 
 	/**
@@ -904,11 +897,6 @@ public class ModelOutlineRenderer
 		if (outlineWidth <= 0)
 		{
 			return;
-		}
-
-		if (isReset)
-		{
-			scheduler.registerObject(this);
 		}
 
 		isReset = false;
