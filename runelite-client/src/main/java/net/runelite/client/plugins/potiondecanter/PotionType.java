@@ -1,0 +1,72 @@
+package net.runelite.client.plugins.potiondecanter;
+
+import lombok.Getter;
+import net.runelite.api.ItemID;
+
+enum PotionType
+{
+	ATTACK(ItemID.VIAL,
+		ItemID.ATTACK_POTION1,
+		ItemID.ATTACK_POTION2,
+		ItemID.ATTACK_POTION3,
+		ItemID.ATTACK_POTION4),
+	PRAYER(ItemID.VIAL,
+		ItemID.PRAYER_POTION1,
+		ItemID.PRAYER_POTION2,
+		ItemID.PRAYER_POTION3,
+		ItemID.PRAYER_POTION4),
+	RANGING(ItemID.VIAL,
+		ItemID.RANGING_POTION1,
+		ItemID.RANGING_POTION2,
+		ItemID.RANGING_POTION3,
+		ItemID.RANGING_POTION4),
+	SUPER_STRENGTH(ItemID.VIAL,
+		ItemID.SUPER_STRENGTH1,
+		ItemID.SUPER_STRENGTH2,
+		ItemID.SUPER_STRENGTH3,
+		ItemID.SUPER_STRENGTH4),
+	SUPER_ATTACK(ItemID.VIAL,
+		ItemID.SUPER_ATTACK1,
+		ItemID.SUPER_ATTACK2,
+		ItemID.SUPER_ATTACK3,
+		ItemID.SUPER_ATTACK4),
+	SUPER_COMBAT(ItemID.VIAL,
+		ItemID.SUPER_COMBAT_POTION1,
+		ItemID.SUPER_COMBAT_POTION2,
+		ItemID.SUPER_COMBAT_POTION3,
+		ItemID.SUPER_COMBAT_POTION4),
+	ATTACK_BARBARIAN_MIX(ItemID.VIAL,
+		ItemID.ATTACK_MIX1,
+		ItemID.ATTACK_MIX2),
+	PRAYER_BARBARIAN_MIX(ItemID.VIAL,
+		ItemID.PRAYER_MIX1,
+		ItemID.PRAYER_MIX2),
+	RANGING_BARBARIAN_MIX(ItemID.VIAL,
+		ItemID.RANGING_MIX1,
+		ItemID.RANGING_MIX2),
+	SUPER_STRENGTH_BARBARIAN_MIX(ItemID.VIAL,
+		ItemID.SUPER_STR_MIX1,
+		ItemID.SUPER_STR_MIX2),
+	SUPER_ATTACK_BARBARIAN_MIX(ItemID.VIAL,
+		ItemID.SUPERATTACK_MIX1,
+		ItemID.SUPERATTACK_MIX2),
+	GUTHIX_REST(ItemID.EMPTY_CUP,
+		ItemID.GUTHIX_REST1,
+		ItemID.GUTHIX_REST2,
+		ItemID.GUTHIX_REST3,
+		ItemID.GUTHIX_REST4);
+
+	// TODO: Add more potion types ...
+
+	@Getter
+	private final int containerItemId;
+
+	@Getter
+	private final int[] potionItemIds;
+
+	PotionType(int containerItemId, int... potionItemIds)
+	{
+		this.containerItemId = containerItemId;
+		this.potionItemIds = potionItemIds;
+	}
+}
