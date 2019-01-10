@@ -50,9 +50,6 @@ import net.runelite.client.ui.overlay.OverlayUtil;
 
 public class NpcSceneOverlay extends Overlay
 {
-	@Inject
-	private ModelOutlineRenderer modelOutliner;
-
 	private static final Color TRANSPARENT = new Color(0, 0, 0, 0);
 
 	// Anything but white text is quite hard to see since it is drawn on
@@ -72,13 +69,15 @@ public class NpcSceneOverlay extends Overlay
 	private final Client client;
 	private final NpcIndicatorsConfig config;
 	private final NpcIndicatorsPlugin plugin;
+	private final ModelOutlineRenderer modelOutliner;
 
 	@Inject
-	NpcSceneOverlay(Client client, NpcIndicatorsConfig config, NpcIndicatorsPlugin plugin)
+	NpcSceneOverlay(Client client, NpcIndicatorsConfig config, NpcIndicatorsPlugin plugin, ModelOutlineRenderer modelOutliner)
 	{
 		this.client = client;
 		this.config = config;
 		this.plugin = plugin;
+		this.modelOutliner = modelOutliner;
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 	}

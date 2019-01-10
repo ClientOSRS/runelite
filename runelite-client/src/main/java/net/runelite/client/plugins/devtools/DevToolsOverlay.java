@@ -76,8 +76,6 @@ class DevToolsOverlay extends Overlay
 	private static final int ITEM_EMPTY = 6512;
 	private static final int ITEM_FILLED = 20594;
 
-	private ModelOutlineRenderer modelOutliner;
-
 	private static final Font FONT = FontManager.getRunescapeFont().deriveFont(Font.BOLD, 16);
 	private static final Color RED = new Color(221, 44, 0);
 	private static final Color GREEN = new Color(0, 200, 83);
@@ -94,6 +92,7 @@ class DevToolsOverlay extends Overlay
 	private final Client client;
 	private final DevToolsPlugin plugin;
 	private final TooltipManager toolTipManager;
+	private final ModelOutlineRenderer modelOutliner;
 
 	@Setter
 	@Getter
@@ -103,13 +102,14 @@ class DevToolsOverlay extends Overlay
 	private int itemIndex = -1;
 
 	@Inject
-	private DevToolsOverlay(Client client, DevToolsPlugin plugin, TooltipManager toolTipManager)
+	private DevToolsOverlay(Client client, DevToolsPlugin plugin, TooltipManager toolTipManager, ModelOutlineRenderer modelOutliner)
 	{
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_MAP);
 		this.client = client;
 		this.plugin = plugin;
 		this.toolTipManager = toolTipManager;
+		this.modelOutliner = modelOutliner;
 	}
 
 	@Override

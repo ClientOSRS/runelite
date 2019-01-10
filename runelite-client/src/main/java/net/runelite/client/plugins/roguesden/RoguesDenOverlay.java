@@ -38,21 +38,20 @@ import net.runelite.client.ui.overlay.OverlayPosition;
 
 public class RoguesDenOverlay extends Overlay
 {
-	@Inject
-	private ModelOutlineRenderer modelOutliner;
-
 	private static final int MAX_DISTANCE = 2350;
 
 	private final Client client;
 	private final RoguesDenPlugin plugin;
+	private final ModelOutlineRenderer modelOutliner;
 
 	@Inject
-	public RoguesDenOverlay(Client client, RoguesDenPlugin plugin)
+	public RoguesDenOverlay(Client client, RoguesDenPlugin plugin, ModelOutlineRenderer modelOutliner)
 	{
 		setPosition(OverlayPosition.DYNAMIC);
 		setLayer(OverlayLayer.ABOVE_SCENE);
 		this.client = client;
 		this.plugin = plugin;
+		this.modelOutliner = modelOutliner;
 	}
 
 	@Override
