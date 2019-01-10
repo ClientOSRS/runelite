@@ -31,6 +31,7 @@ import javax.inject.Inject;
 import net.runelite.api.Client;
 import net.runelite.api.GameObject;
 import net.runelite.api.TileObject;
+import net.runelite.client.graphics.ModelOutlineRenderer;
 import net.runelite.client.ui.overlay.Overlay;
 import net.runelite.client.ui.overlay.OverlayLayer;
 import net.runelite.client.ui.overlay.OverlayPosition;
@@ -42,13 +43,15 @@ class ObjectIndicatorsOverlay extends Overlay
 	private final Client client;
 	private final ObjectIndicatorsConfig config;
 	private final ObjectIndicatorsPlugin plugin;
+	private final ModelOutlineRenderer modelOutliner;
 
 	@Inject
-	private ObjectIndicatorsOverlay(Client client, ObjectIndicatorsConfig config, ObjectIndicatorsPlugin plugin)
+	private ObjectIndicatorsOverlay(Client client, ObjectIndicatorsConfig config, ObjectIndicatorsPlugin plugin, ModelOutlineRenderer modelOutliner)
 	{
 		this.client = client;
 		this.config = config;
 		this.plugin = plugin;
+		this.modelOutliner = modelOutliner;
 		setPosition(OverlayPosition.DYNAMIC);
 		setPriority(OverlayPriority.LOW);
 		setLayer(OverlayLayer.ABOVE_SCENE);
@@ -64,23 +67,7 @@ class ObjectIndicatorsOverlay extends Overlay
 				continue;
 			}
 
-			final Polygon polygon;
-
-			if (object instanceof GameObject)
-			{
-				polygon = ((GameObject) object).getConvexHull();
-			}
-			else
-			{
-				polygon = object.getCanvasTilePoly();
-			}
-
-			if (polygon == null)
-			{
-				continue;
-			}
-
-			OverlayUtil.renderPolygon(graphics, polygon, config.markerColor());
+			modelOutliner.drawOutline(object, 2, config.markerColor());
 		}
 
 		return null;
