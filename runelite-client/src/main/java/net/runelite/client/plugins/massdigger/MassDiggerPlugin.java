@@ -39,6 +39,7 @@ import net.runelite.api.Player;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.AnimationChanged;
 import net.runelite.api.events.CommandExecuted;
+import net.runelite.api.events.ConfigChanged;
 import net.runelite.api.events.GameStateChanged;
 import net.runelite.api.events.ItemContainerChanged;
 import net.runelite.api.geometry.Geometry;
@@ -74,6 +75,9 @@ public class MassDiggerPlugin extends Plugin
 
 	@Inject
 	private OverlayManager overlayManager;
+
+	@Inject
+	private MassDiggerConfig config;
 
 	@Inject
 	private MassDiggerOverlay overlay;
@@ -210,39 +214,42 @@ public class MassDiggerPlugin extends Plugin
 	{
 		updateSceneDigLocations();
 
-		dugArea = new Area();
-
-		DugLocations dugLocations = digGroups.get(currentDigGroup);
-		if (dugLocations == null)
+		if (config.showDugAreas())
 		{
-			return;
-		}
+			dugArea = new Area();
 
-		for (WorldPoint wp : dugLocations.getLocations())
-		{
-			if (wp.getPlane() != client.getPlane())
+			DugLocations dugLocations = digGroups.get(currentDigGroup);
+			if (dugLocations == null)
 			{
-				continue;
+				return;
 			}
 
-			if (isInScene(wp.getX(), wp.getY()))
+			for (WorldPoint wp : dugLocations.getLocations())
 			{
-				dugArea.add(new Area(new Rectangle(
-					wp.getX() - DIG_RADIUS,
-					wp.getY() - DIG_RADIUS,
-					DIG_RADIUS * 2 + 1,
-					DIG_RADIUS * 2 + 1)));
+				if (wp.getPlane() != client.getPlane())
+				{
+					continue;
+				}
+
+				if (isInScene(wp.getX(), wp.getY()))
+				{
+					dugArea.add(new Area(new Rectangle(
+						wp.getX() - DIG_RADIUS,
+						wp.getY() - DIG_RADIUS,
+						DIG_RADIUS * 2 + 1,
+						DIG_RADIUS * 2 + 1)));
+				}
 			}
+
+			Rectangle viewArea = new Rectangle(
+				client.getBaseX(),
+				client.getBaseY(),
+				Constants.SCENE_SIZE,
+				Constants.SCENE_SIZE);
+			dugPath = new GeneralPath(dugArea);
+
+			dugPath = Geometry.clipPath(dugPath, viewArea);
 		}
-
-		Rectangle viewArea = new Rectangle(
-			client.getBaseX(),
-			client.getBaseY(),
-			Constants.SCENE_SIZE,
-			Constants.SCENE_SIZE);
-		dugPath = new GeneralPath(dugArea);
-
-		dugPath = Geometry.clipPath(dugPath, viewArea);
 	}
 
 	@Subscribe
@@ -256,6 +263,23 @@ public class MassDiggerPlugin extends Plugin
 		if (event.getArguments().length >= 1 && event.getArguments()[0].toLowerCase().equals("save"))
 		{
 			saveFiles();
+		}
+	}
+
+	@Subscribe
+	public void onConfigChanged(ConfigChanged event)
+	{
+		if (!event.getGroup().equals("massDigger"))
+		{
+			return;
+		}
+
+		if (event.getKey().equals("showDugAreas"))
+		{
+			if (config.showDugAreas())
+			{
+				updateDugArea();
+			}
 		}
 	}
 
